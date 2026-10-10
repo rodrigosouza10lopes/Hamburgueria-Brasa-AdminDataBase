@@ -1,28 +1,45 @@
 import streamlit as st
 import pandas as pd
+import re
 from sqlalchemy import create_engine, text 
 from urllib.parse import quote_plus
 
-SERVIDOR =  r"D02S22-1252888\SQLEXPRESS"
+SERVIDOR =  r"brasa-rodrigo.database.windows.net"
 BANCO = "HamburgueriaBrasa"
-DRIVER = "ODBC Driver 18 for SQL server"
+DRIVER = "ODBC Driver 18 for SQL Server"
 
 #OUTRO MÉTODO LOGIN
-USUARIO = "sa"
-SENHA = "Senai@134"
+#SUARIO = "sa"
+#SENHA = "Senai@134"
+
+def ler_segredo():
+    try:
+        return st.secrets["banco"]
+    except Exception:
+        return None
+    
 
 
-
+@st.cache_resource
 def conectar():
     # Autentificação via windows utilizando ODBC
+    banco = ler_segredo()
+    print(banco)
+    if banco :
+        odbc = ( 
+            f"DRIVER={'ODBC Driver 17 for SQL Server'};SERVER={banco['servidor']};DATABASE={banco['nome']};"
+            f"UID={banco['usuario']};PWD={banco['senha']};"
+            "Encrypt=yes;TrustServerCertificate=no;Connection Timeout=60"
+            )
+        print(odbc)
+    else: # SQL Server local, autentificação do windons
+       odbc = ( 
+           f"DRIVER={{{DRIVER}}};SERVER={SERVIDOR};DATABASE={BANCO};"
+           "Trusted_Connection=yes;TrustServerCertificate=yes"
+       )
 
-    odbc = ( 
-        f"DRIVER={{{DRIVER}}};SERVER={SERVIDOR};DATABASE={BANCO};"
-        f"UID={USUARIO};PWD={SENHA};"
-        "TrustServerCertificate=yes"
-    )
+    return create_engine("mssql+pyodbc:///?odbc_connect="+ quote_plus(odbc), pool_pre_ping=True)
 
-    return create_engine("mssql+pyodbc:///?odbc_connect="+ quote_plus(odbc))
 
 def consultar(sql):
     with conectar().connect() as conexao:

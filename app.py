@@ -1,8 +1,7 @@
 import streamlit as st
 
-
-
 st.set_page_config(page_title="Brasa & Pão - Painel SQL", layout="wide")
+st.image('banner.jpg', width='stretch')
 
 st.navigation([
     st.Page("paginas/inicio.py", title="ínicio", default=True),

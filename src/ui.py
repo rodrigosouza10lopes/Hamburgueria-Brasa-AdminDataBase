@@ -1,4 +1,4 @@
-import streamlit as st
+
 
 """Monta a página de cada nível: pergunta, gráfico e tabela."""
 import streamlit as st
